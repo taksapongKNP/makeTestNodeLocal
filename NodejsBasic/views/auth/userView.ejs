@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product</title>
+
+   
+</head>
+<body>
+    <%- include ../layout/navbar %>
+    <div class="container">
+        <h2>สมาชิก</h2>
+        <a class="btn btn-primary"  href="/user/add">เพิ่มสมาชิก</a>
+        <a href="/">หน้าหลัก</a>
+        <p>
+           
+               
+                <table id="member" class="table table-hover table-bordered" style="width:100%">
+                    <thead>
+                        
+                        <tr>
+                            <th>ชื่อผู้ใช้</th>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th>ขอบเขตผู้ใช้</th>
+                            <th>ดำเนินการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% users.forEach(function(user){ %>
+                        <tr>
+                            <td><%= user.userName %></td>
+                            <td><%= user.firstName %> <%= user.lastName %></td>
+                            <td>
+                                <% if(user.domain == 1) {%>
+                                    ผู้ดูแล
+                                <%} else{%>
+                                    สมาชิก
+                                 <% } %>
+                            </td>
+                            <td>
+                                <a href="/user/edit/<%= user._id %>">แก้ไข</a>
+                                <a href="" data-toggle="modal" data-target="#myModal-<%= user._id %>">ลบ</a>
+                            </td>
+                        </tr>
+                            <!-- Modal  -->
+                        <div class="modal fade" id="myModal-<%= user._id %>">
+                            <div class="modal-dialog modal-sm">
+                              <div class="modal-content">
+                              
+                                <!-- Modal Header -->
+                                <div class="modal-header">
+                                  <h4 class="modal-title">ลบผู้ใช้</h4>
+                                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                </div>
+                                
+                                <!-- Modal body -->
+                                <div class="modal-body">
+                                    <%= user.firstName %> <%= user.lastName %>
+                                </div>
+                                
+                                <!-- Modal footer -->
+                                <div class="modal-footer">
+                                  <a  href="/user/delete/<%= user._id %>"class="btn btn-danger">ลบ</a>  
+                                  <button type="button" class="btn btn-secondary" data-dismiss="modal">ย้อนกลับ</button>
+                                </div>
+                                
+                              </div>
+                            </div>
+                          </div>
+                        <!-- End Modal  -->
+
+                        <% }); %> 
+                    </tbody>
+                    
+                </table>
+        
+    </div>
+
+    
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+   <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+   <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+</body>
+<script>
+$(document).ready(function() {
+    $('#member').DataTable();
+} );
+</script>
+
+
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css"> -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">
+</html>

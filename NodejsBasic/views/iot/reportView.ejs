@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>iot</title>
+
+    
+    
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<style>
+.card {
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  transition: 0.3s;
+  border-radius: 5px;
+  background-color: rgb(255, 255, 255); /* 5px rounded corners */
+}
+.card-body {
+    padding: 16px 16px;
+}
+/* Add rounded corners to the top left and the top right corner of the image */
+
+</style>
+</head>
+<body style="background-color: rgba(221, 206, 206, 0.534);">
+ 
+    <%- include ../layout/navbar %>
+    
+    <div class="container" >
+        <div class="card w3-panel w3-card"><h2>Report</h2></div>
+        <div class="card">
+            <div class="card-body">
+              <select name="iot" id="iot-selected">
+                <option value ="">เลือกงาน</option>
+                <% iots.forEach(function(iot){ %>
+                <option value="<%=iot.iotId%>"><%=iot.iotId%></option>
+                <%});%>
+              </select>
+              <select name="block" id="dropdown1" >
+                <option value="">เลือกข้อมูล</option>
+            </select>
+            <input type = "date" name = "sdate" id = "sdate">
+            <input type = "date" name = "ldate" id = "ldate">
+              
+              <button type="submit" class="btn btn-success btn-search"  id="renderBtn">ค้นหา</button>
+              <button type="submit" class="btn btn-danger"  id="clearBtn">ล้างข้อมูล</button>
+              <div class="row" id="chart-add">
+              </div>
+                <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myProject">
+                    เพิ่มงาน
+                  </button><br><br> -->
+        </div>
+       </div>
+        
+        
+    </div>
+    <script>
+
+        //เรียก resource
+        $(document).ready(function(){
+ 
+        $("#iot-selected").change(function (){
+        var item = $('#iot-selected').val();
+        
+        $.ajax({
+            type:'GET',
+            data: { selectedId: item },
+            url:'/report/getResource',
+            success: function(data){
+              // alert(data[0]._id);
+              var len = data.length;
+              $("#dropdown1").empty();
+              $("#dropdown1").append("<option value='' >เลือกข้อมูล</option>");
+                for(var i =0; i<len;i++){
+                var rId = data[i].resourceId;
+                var rName = data[i].resourceName;
+                    $("#dropdown1").append("<option value='"+rId+"' >"+rName+"</option>");
+                
+                }
+        }
+            
+          });
+      });
+
+
+
+    });
+    </script>
+
+
+    <!-- chart -->
+
+
+    
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.7.3/dist/Chart.bundle.min.js"></script>
+<script>
+ $("#clearBtn").click(
+    function () {
+      $('#lineChart').remove(); // this is my <canvas> element
+  
+  });
+
+  $("#renderBtn").click(
+    function () {
+      if($('#iot-selected').val() =="" ||$('#dropdown1').val() == ""){
+        $('#lineChart').remove();
+        $('#chart-add').append('<div id="lineChart" >กรุณาเลือกข้อมูลที่ต้องการแสดง</div>');
+      }
+      else{
+      $('#lineChart').remove(); // this is my <canvas> element
+  $('#chart-add').append('<canvas id="lineChart"></canvas>');
+        getChartData();
+      }
+  });
+  
+  function getChartData() {
+    // $("#loadingMessage").html('<img src="./giphy.gif" alt="" srcset="">');
+    var resource = $('#dropdown1').val();
+    var sdate = $('#sdate').val();
+    var ldate = $('#ldate').val();
+    $.ajax({
+            type:'GET',
+            data: { rId: resource ,sdate:sdate ,ldate:ldate},
+            url:'/report/getChart',
+        success: function (result) {
+          // alert((result.));
+          
+          var len = result.length;
+          var date = [];
+          var val = []
+          var rName = result[0].resourceName;
+          var iot = result[0].iotId;
+          for(var i =0; i<len;i++){
+            date.push(result[i].resourceDate);
+            
+            val.push(result[i].resourceData);
+          }
+          // alert(val);
+            renderChart(val,date,rName,iot);
+        }
+    });
+  }
+
+  function renderChart(val,date,resource,iot) {
+  var ctx = document.getElementById( "lineChart" );
+              ctx.height = 100;
+              var myChart = new Chart( ctx, {
+                  type: 'line',
+                  data: {
+                      labels: date,
+                      datasets: [
+                          {
+                              label: resource+" of "+iot,
+                              borderColor: "rgba(60, 179, 113,1)",
+                              borderWidth: "1",
+                              backgroundColor: "rgba(60, 179, 113,0.5)",
+                              data: val,
+                                      },
+                          // {
+                          //     label: "My Second dataset",
+                          //     borderColor: "rgba(0, 194, 146, 0.9)",
+                          //     borderWidth: "1",
+                          //     backgroundColor: "rgba(0, 194, 146, 0.5)",
+                          //     pointHighlightStroke: "rgba(26,179,148,1)",
+                          //     data: [ 16, 32, 18 ]
+                          //             },
+                         
+
+                                  ]
+                  },
+                  options: {
+                    scales: {
+                      xAxes: [
+                          {
+                              ticks: {
+                                  display: false
+                              }
+                          }
+                      ]},
+                      responsive: true,
+                      tooltips: {
+                          mode: 'index',
+                          intersect: false,
+                      },
+                      hover: {
+                          mode: 'nearest',
+                          intersect: true
+                      },
+                      
+                    
+                  }
+              } );
+              }
+  
+</script>
+<!-- end chart -->
+
+   
+
+
+    <script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+    <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+    
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css"> -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css"> 
+
+    <!-- toggle -->
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+</body>
+
+
+
+</html>
